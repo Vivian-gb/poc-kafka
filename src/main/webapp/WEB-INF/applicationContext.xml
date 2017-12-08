@@ -1,0 +1,62 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+xmlns:mvc="http://www.springframework.org/schema/mvc" 
+xmlns:context="http://www.springframework.org/schema/context"
+xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+xmlns:aop="http://www.springframework.org/schema/aop"
+xmlns:int="http://www.springframework.org/schema/integration"
+xmlns:stream="http://www.springframework.org/schema/integration/stream"
+xmlns:int-kafka="http://www.springframework.org/schema/integration/kafka"
+xsi:schemaLocation="
+        http://www.springframework.org/schema/beans     
+        http://www.springframework.org/schema/beans/spring-beans.xsd
+        http://www.springframework.org/schema/mvc 
+        http://www.springframework.org/schema/mvc/spring-mvc.xsd
+        http://www.springframework.org/schema/context 
+        http://www.springframework.org/schema/context/spring-context.xsd
+        http://www.springframework.org/schema/aop
+        http://www.springframework.org/schema/aop/spring-aop.xsd
+        http://www.springframework.org/schema/integration/stream
+        http://www.springframework.org/schema/integration/stream/spring-integration-stream-4.0.xsd
+        http://www.springframework.org/schema/integration/kafka
+        http://www.springframework.org/schema/integration/kafka/spring-integration-kafka.xsd
+        http://www.springframework.org/schema/integration 
+        http://www.springframework.org/schema/integration/spring-integration.xsd">
+
+	<context:spring-configured />
+	<context:annotation-config />
+	<context:component-scan base-package="com.teste.kafkapoc" />
+	<aop:aspectj-autoproxy />
+	<int:channel id="inputToKafka">
+		<int:queue />
+	</int:channel>
+	<int-kafka:message-driven-channel-adapter
+		id="kafkaListener" listener-container="container1" auto-startup="false"
+		phase="100" send-timeout="5000" mode="record" channel="inputToKafka"
+		error-channel="errorChannel" />
+
+	<bean id="container1"
+		class="org.springframework.kafka.listener.KafkaMessageListenerContainer">
+		<constructor-arg>
+			<bean class="org.springframework.kafka.core.DefaultKafkaConsumerFactory">
+				<constructor-arg>
+					<map>
+						<entry key="bootstrap.servers" value="localhost:9092" />
+                        <entry key="group.id" value="test" />
+                        <entry key="enable.auto.commit" value="true" />
+                        <entry key="auto.commit.interval.ms" value="1000" />
+                        <entry key="session.timeout.ms" value="30000" />
+                        <entry key="key.deserializer" value="org.apache.kafka.common.serialization.StringDeserializer" />
+                        <entry key="value.deserializer" value="org.apache.kafka.common.serialization.StringDeserializer" />
+					</map>
+				</constructor-arg>
+			</bean>
+		</constructor-arg>
+		<constructor-arg>
+            <bean class="org.springframework.kafka.listener.config.ContainerProperties">
+                <constructor-arg name="topics" value="fila" />
+            </bean>
+        </constructor-arg>
+	</bean>
+
+</beans>
